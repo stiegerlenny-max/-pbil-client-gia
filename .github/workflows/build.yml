@@ -5,17 +5,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: pbil-client-1.0-flach
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
-      - run: chmod +x gradlew && ./gradlew build
+      - name: Projektordner finden
+        run: |
+          G=$(find . -name gradlew -not -path './.git/*' | head -n 1)
+          echo "gefunden: $G"
+          echo "DIR=$(dirname "$G")" >> "$GITHUB_ENV"
+      - name: Bauen
+        run: |
+          cd "$DIR"
+          test -f build.gradle || cp build.gradle.txt build.gradle
+          chmod +x gradlew
+          ./gradlew build
       - uses: actions/upload-artifact@v4
         with:
           name: pbil-client
-          path: pbil-client-1.0-flach/build/libs/*.jar
+          path: '**/build/libs/*.jar'
